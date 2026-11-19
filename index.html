@@ -59,6 +59,16 @@ header .ancho{display:flex;align-items:center;gap:16px;padding-top:4px;padding-b
 .dibujo{background:#D8F3EA;border-radius:20px;display:grid;place-items:center;aspect-ratio:4/3}
 .dibujo svg{width:62%;height:auto}.dibujo{overflow:hidden;position:relative}
 .dibujo .sello{position:absolute;right:3%;bottom:4%;width:26%;min-width:64px;height:auto!important;background:none!important;border:2px solid #fff;border-radius:12px;box-shadow:0 2px 6px rgba(18,54,46,.25);opacity:.93;pointer-events:none}
+.collage{position:absolute;inset:0;display:grid;gap:3px;background:#D8F3EA}
+.collage.c2{grid-template-columns:1fr 1fr}
+.collage.c3{grid-template-columns:1.25fr 1fr;grid-template-rows:1fr 1fr}.collage.c3 .pz:first-child{grid-row:1/3}
+.collage.c4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.pz{position:relative;background:#fff;overflow:hidden;display:grid;place-items:center;min-height:0}
+.pz svg{width:72%;height:auto}
+.pz .x{position:absolute;left:6px;bottom:6px;background:var(--tinta);color:#fff;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:800}
+.combo-tag{position:absolute;left:8px;top:8px;z-index:2;background:var(--naranja);color:var(--tinta);font-weight:800;font-size:13px;line-height:1.2;border-radius:999px;padding:5px 11px;box-shadow:0 2px 8px rgba(18,54,46,.25)}
+.mas-pz{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.linea .combo-tag,.linea .pz .x{display:none}
 .linea .dibujo .sello{display:none}.dibujo img{width:100%;height:100%;object-fit:contain;background:#fff}
 .precio{display:flex;gap:10px;align-items:baseline;font-variant-numeric:tabular-nums}
 .precio b{font-size:24px;font-family:var(--display)}
@@ -257,6 +267,7 @@ function armarCombos(){
     var f=ps[0].p;
     return {id:c.id,nombre:c.nombre,cat:'Combos Kasu',combo:true,propio:true,precio:precio,suelto:suelto,desc:c.desc,
       puntos:ps.map(function(x){return (x.n>1?x.n+' × ':'')+x.p.nombre+' ('+pesos(x.p.precio)+')';}),
+      fotos:ps.map(function(x){return {img:x.p.img,cdn:x.p.cdn,grande:x.p.grande,cat:x.p.cat,ico:x.p.ico,nombre:x.p.nombre,n:x.n};}),
       navidad:!!c.navidad,img:f.img,cdn:f.cdn,grande:f.grande,sello:f.sello,titulo:ps.map(function(x){return x.p.nombre+' '+(x.p.titulo||'');}).join(' ')};
   }).filter(Boolean);
   PRODUCTOS=nuevos.concat(PRODUCTOS);
@@ -283,7 +294,16 @@ function dibujo(k){
    corrector:'<circle cx="50" cy="20" r="10" fill="'+t+'"/><path d="M30 86V52a20 20 0 0 1 40 0v34" fill="'+m+'"/><path d="M32 44l36 30M68 44 32 74" stroke="'+n+'" stroke-width="6" stroke-linecap="round"/>'};
   return '<svg viewBox="0 0 100 100" role="img" aria-label="Dibujo de ejemplo">'+(c[k]||c.organizador)+'</svg>';
 }
-function foto(p,grande){if(!p.img)return dibujo(p.ico||RESP[p.cat]||'organizador');var src=grande&&p.grande?p.grande:p.img,otra=grande&&p.grande?p.img:(p.cdn||'');return '<img src="'+esc(src)+'" alt="'+esc(p.nombre)+'" loading="lazy" data-resp="'+esc(p.cat||'')+'" data-otra="'+esc(otra)+'"'+(p.sello&&src===p.img?' data-marca="1"':'')+(p.sello&&otra===p.img?' data-quita="1"':'')+'>'+(p.sello&&src===p.img?'':'<img class="sello" src="logo.jpg" alt="">');}
+// Combos: las fotos de todos sus productos juntas, con la etiqueta de combo y un solo sello de Kasu
+function fotoCombo(p,grande){
+  var fs=p.fotos.slice(0,4),n=p.fotos.length;
+  return '<div class="collage c'+Math.min(fs.length,4)+'">'+fs.map(function(f){
+    var src=grande&&f.grande?f.grande:f.img,otra=grande&&f.grande?f.img:(f.cdn||'');
+    return '<div class="pz">'+(f.img?'<img src="'+esc(src)+'" alt="'+esc(f.nombre)+'" loading="lazy" data-resp="'+esc(f.cat||'')+'" data-otra="'+esc(otra)+'">':dibujo(f.ico||RESP[f.cat]||'organizador'))
+      +(f.n>1?'<b class="x">×'+f.n+'</b>':'')+'</div>';
+  }).join('')+'</div><span class="combo-tag">🎁 Combo · '+n+' productos</span><img class="sello" src="logo.jpg" alt="">';
+}
+function foto(p,grande){if(p.combo&&p.fotos&&p.fotos.length>1)return fotoCombo(p,grande);if(!p.img)return dibujo(p.ico||RESP[p.cat]||'organizador');var src=grande&&p.grande?p.grande:p.img,otra=grande&&p.grande?p.img:(p.cdn||'');return '<img src="'+esc(src)+'" alt="'+esc(p.nombre)+'" loading="lazy" data-resp="'+esc(p.cat||'')+'" data-otra="'+esc(otra)+'"'+(p.sello&&src===p.img?' data-marca="1"':'')+(p.sello&&otra===p.img?' data-quita="1"':'')+'>'+(p.sello&&src===p.img?'':'<img class="sello" src="logo.jpg" alt="">');}
 var RESP={'Tarjetas de regalo':'regalo','Herramientas y carro':'molino','Sonido y viaje':'luz','Cocina':'picadora','Hogar':'organizador','Bienestar':'masajeador','Filtros de agua':'licuadora','Cama y descanso':'organizador','Niños y mascotas':'organizador','Industria y bodega':'mopa'};
 document.addEventListener('error',function(ev){var i=ev.target;if(i.tagName==='IMG'&&i.dataset&&'resp' in i.dataset){if(i.dataset.otra){var o=i.dataset.otra;i.dataset.otra='';i.src=o;if(i.dataset.quita){var q=i.parentNode&&i.parentNode.querySelector('.sello');if(q)q.remove();}if(i.dataset.marca){i.dataset.marca='';var se=document.createElement('img');se.className='sello';se.src='logo.jpg';se.alt='';i.after(se);}return;}var sel=i.parentNode&&i.parentNode.querySelector('.sello');if(sel)sel.remove();var d=document.createElement('div');d.innerHTML=dibujo(RESP[i.dataset.resp]||'organizador');i.replaceWith(d.firstChild);}},true);
 var carro={},cat='Todos',busca='',tope=24,col='';
