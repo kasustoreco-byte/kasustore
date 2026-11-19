@@ -233,7 +233,8 @@ var CONFIG={
   navidadCorte:'2026-12-18',   // último día para pedir y recibir antes del 24 (ajústelo con la transportadora)
   envoltura:5000,              // valor de envolver el pedido para regalo (todo en un paquete); 0 = gratis
   tarjetas:[50000,100000,200000], // valores de las tarjetas de regalo
-  tarjetaVigencia:'un año'     // vigencia de las tarjetas de regalo desde la compra
+  tarjetaVigencia:'un año',    // vigencia de las tarjetas de regalo desde la compra
+  bajoOtraTienda:1             // % por debajo del precio real de la otra tienda (mientras no haya precio del panel); 0 = igual
 };
 var MUESTRA=[
  {id:'molino',nombre:'Molino multiusos',cat:'Cocina',precio:149900,antes:189900,ico:'molino',desc:'Muele maíz, carne, café y granos con una sola manivela.',puntos:['Cuerpo metálico, se fija a la mesa','Se desarma para lavarlo','Incluye dos discos de molienda']},
@@ -246,6 +247,12 @@ var MUESTRA=[
  {id:'corrector',nombre:'Corrector de postura',cat:'Bienestar',precio:44900,antes:59900,ico:'corrector',desc:'Te recuerda enderezar la espalda mientras trabajas.',puntos:['Ajustable, tallas S a XL','Tela que respira','No se nota bajo la ropa']}
 ];
 var PRODUCTOS=(window.KASU_PRODUCTOS&&window.KASU_PRODUCTOS.length)?window.KASU_PRODUCTOS:MUESTRA;
+// Precio de arranque: un poco más barato que el precio REAL de la otra tienda (ref), redondeado hacia abajo a centenas.
+// Cuando el panel tenga el costo y el precio de un producto, manda el del panel.
+(function(){var d=Number(CONFIG.bajoOtraTienda)||0;if(d<=0)return;
+  function baja(v){return Math.floor(v*(1-d/100)/100)*100;}
+  PRODUCTOS.forEach(function(p){if(p.ref>0&&p.precio>=p.ref){p.precio=baja(p.ref);(p.variantes||[]).forEach(function(v){if(v.precio>0)v.precio=baja(v.precio);});}});
+})();
 // Precios del panel: el administrador pone costo y margen; aquí llega solo el precio final de cada producto
 function aplicarPrecios(o){if(!o)return 0;var n=0;PRODUCTOS.forEach(function(p){var x=o[p.id];if(!x)return;if(x.precio>0)p.precio=x.precio;p.oculto=!!x.oculto;n++;});return n;}
 (function(){
