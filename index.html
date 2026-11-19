@@ -74,6 +74,7 @@ header .ancho{display:flex;align-items:center;gap:16px;padding-top:4px;padding-b
 .precio b{font-size:24px;font-family:var(--display)}
 .precio s{color:var(--tinta-suave)}
 .precio .ref{color:var(--tinta-suave);font-size:13px;font-weight:600}
+.precio{flex-wrap:wrap}.precio .tachado{display:flex;flex-direction:column;line-height:1.1}.precio .tachado s{font-size:15px}.precio .tachado small{font-size:11px;color:var(--tinta-suave);font-weight:600}
 .juntos{margin:6px 0 0;font-size:13px;font-weight:700;color:var(--ok)}
 .nota-ref{font-size:12px;color:var(--tinta-suave);margin:4px 0 0}
 .ahorro{background:var(--tinta);color:var(--blanco);border-radius:999px;font-size:13px;font-weight:700;padding:2px 10px}
@@ -234,7 +235,7 @@ var CONFIG={
   envoltura:5000,              // valor de envolver el pedido para regalo (todo en un paquete); 0 = gratis
   tarjetas:[50000,100000,200000], // valores de las tarjetas de regalo
   tarjetaVigencia:'un año',    // vigencia de las tarjetas de regalo desde la compra
-  bajoOtraTienda:1             // % por debajo del precio real de la otra tienda (mientras no haya precio del panel); 0 = igual
+  bajoOtraTienda:0             // % por debajo del precio real de la otra tienda (mientras no haya precio del panel); 0 = igual
 };
 var MUESTRA=[
  {id:'molino',nombre:'Molino multiusos',cat:'Cocina',precio:149900,antes:189900,ico:'molino',desc:'Muele maíz, carne, café y granos con una sola manivela.',puntos:['Cuerpo metálico, se fija a la mesa','Se desarma para lavarlo','Incluye dos discos de molienda']},
@@ -353,7 +354,7 @@ function precioHTML(p,detalle){
   var rf=!ah&&p.ref>p.precio?p.ref:0,ahr=rf?rf-p.precio:0;
   return '<div class="precio"><b>'+pesos(p.precio)+'</b>'
     +(ah?'<s>'+pesos(p.antes)+'</s><span class="ahorro">Ahorras '+ah+'%</span>':'')
-    +(rf?'<span class="ref">En otras tiendas '+pesos(rf)+'</span><span class="ahorro">Ahorras '+pesos(ahr)+'</span>':'')+'</div>'
+    +(rf?'<span class="tachado"><s>'+pesos(rf)+'</s><small>en otras tiendas</small></span><span class="ahorro">-'+Math.max(1,Math.round(ahr/rf*100))+'% · Ahorras '+pesos(ahr)+'</span>':'')+'</div>'
     +(rf&&detalle?'<p class="nota-ref">Precio del mismo producto en otra tienda en línea, consultado el '+fechaCorta(p.refFecha)+'.</p>':'')
     +ahorroJuntos(p,detalle);
 }
