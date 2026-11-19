@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel Kasu</title>
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Panel de administración: la misma marca de la tienda (menta, naranja, tinta), pero sobrio y denso, pensado para trabajar. */
+:root{
+  color-scheme:light;
+  --menta:#6FD9B8; --menta-suave:#E6F8F1; --naranja:#FF7A2F; --naranja-fuerte:#D9540B;
+  --tinta:#12362E; --tinta-suave:#4D6B63; --papel:#FBFEFC; --blanco:#FFFFFF; --linea:#CFE9DF; --ok:#0E7A55; --aviso:#8A4B00; --mal:#A32012;
+  --display:"Baloo 2","Trebuchet MS",sans-serif; --texto:"Figtree","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--papel);color:var(--tinta);font-family:var(--texto);font-size:15px;line-height:1.45}
+h1,h2,h3{font-family:var(--display);line-height:1.05;margin:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.ancho{max-width:1200px;margin:0 auto;padding:0 16px}
+header{background:var(--menta);position:sticky;top:0;z-index:5}
+header .ancho{display:flex;align-items:center;gap:14px;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
+header img{height:44px;width:auto;border-radius:10px}
+header h1{font-size:24px}
+header .sal{margin-left:auto;font-size:13px;color:var(--tinta)}
+.modo{background:#FFF1DC;border:1px solid #F3C98B;color:var(--aviso);border-radius:12px;padding:10px 14px;margin:14px 0;font-size:14px}
+.modo b{color:var(--aviso)}
+.tarjetas{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:14px 0}
+.tar{background:var(--blanco);border:1px solid var(--linea);border-radius:16px;padding:12px 14px}
+.tar small{display:block;color:var(--tinta-suave);font-weight:600;font-size:12.5px}
+.tar b{font-family:var(--display);font-size:26px}
+.bloque{background:var(--blanco);border:1px solid var(--linea);border-radius:18px;padding:16px;margin:14px 0}
+.bloque h2{font-size:22px;margin-bottom:4px}
+.bloque p.ayuda{color:var(--tinta-suave);margin:0 0 12px;font-size:14px}
+.fila{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.campo{display:grid;gap:4px;font-weight:600;font-size:13px}
+.campo input,.campo select{border:2px solid var(--linea);border-radius:10px;padding:8px 10px;background:var(--papel);min-width:0}
+.btn{border:0;border-radius:999px;padding:10px 18px;font-weight:700;background:var(--naranja);color:var(--tinta)}
+.btn.claro{background:var(--menta-suave);border:2px solid var(--linea)}
+.btn.tinta{background:var(--tinta);color:var(--blanco)}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--tinta);outline-offset:2px}
+.msg{margin-top:10px;font-size:14px;border-radius:10px;padding:10px 12px;display:none}
+.msg.ok{display:block;background:var(--menta-suave);color:var(--ok)}
+.msg.mal{display:block;background:#FDECEA;color:var(--mal)}
+.tabla-caja{overflow-x:auto;border:1px solid var(--linea);border-radius:14px;background:var(--blanco)}
+table{border-collapse:collapse;width:100%;min-width:960px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--linea);text-align:left;vertical-align:middle}
+th{font-size:12.5px;color:var(--tinta-suave);background:var(--menta-suave);position:sticky;top:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td input{width:110px;border:2px solid var(--linea);border-radius:8px;padding:6px 8px;text-align:right;background:var(--papel)}
+td input.corto{width:70px}
+td .nom{font-weight:700}
+td .sec{font-size:12px;color:var(--tinta-suave)}
+.et{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.et.ok{background:var(--menta-suave);color:var(--ok)}
+.et.av{background:#FFF1DC;color:var(--aviso)}
+.et.gr{background:#EEF2F1;color:var(--tinta-suave)}
+.pag{display:flex;gap:8px;align-items:center;justify-content:center;margin:12px 0}
+@media (max-width:760px){.tarjetas{grid-template-columns:repeat(2,1fr)}.tar b{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div class="ancho"><img src="logo.jpg" alt="Kasu Store"><h1>Panel · Costos y precios</h1><span class="sal" id="quien"></span></div></header>
+<main class="ancho">
+  <div class="modo" id="modo" hidden><b>Modo prueba.</b> Todavía no está conectado a la base de datos de Kasu: lo que guarde aquí solo queda en este navegador y solo cambia la tienda abierta en este mismo navegador. Cuando conectemos Firebase, los precios quedarán para todos los clientes.</div>
+
+  <section class="bloque" id="b-ingreso" hidden>
+    <h2>Ingresar</h2>
+    <p class="ayuda">Solo el administrador de Kasu puede cambiar costos y precios.</p>
+    <div class="fila">
+      <label class="campo">Correo<input id="i-correo" type="email" autocomplete="username"></label>
+      <label class="campo">Contraseña<input id="i-clave" type="password" autocomplete="current-password"></label>
+      <button class="btn" id="i-entrar" type="button">Entrar</button>
+    </div>
+    <div class="msg" id="i-msg"></div>
+  </section>
+
+  <div id="trabajo" hidden>
+  <div class="tarjetas">
+    <div class="tar"><small>Productos</small><b id="t-total">0</b></div>
+    <div class="tar"><small>Con costo</small><b id="t-costo">0</b></div>
+    <div class="tar"><small>Sin costo (precio actual)</small><b id="t-sin">0</b></div>
+    <div class="tar"><small>Más baratos que otras tiendas</small><b id="t-bajo">0</b></div>
+    <div class="tar"><small>Ocultos en la tienda</small><b id="t-oc">0</b></div>
+  </div>
+
+  <section class="bloque">
+    <h2>Regla de precio</h2>
+    <p class="ayuda">Desde aquí también puede ocultar o mostrar una sección completa en la tienda. Precio de venta = costo + margen. Se puede poner un margen distinto por sección o por producto; si un producto tiene precio manual, manda ese.</p>
+    <div class="fila">
+      <label class="campo">Margen general (%)<input id="r-margen" type="number" min="0" step="5" style="width:120px"></label>
+      <label class="campo">Redondeo<select id="r-redondeo"><option value="900">Terminar en 900 (ej. 52.900)</option><option value="1000">Al millar (ej. 53.000)</option><option value="100">A la centena (ej. 52.400)</option></select></label>
+      <button class="btn" id="r-guardar" type="button">Guardar regla</button>
+    </div>
+    <div class="fila" style="margin-top:12px">
+      <label class="campo">Margen por sección<select id="s-sec"></select></label>
+      <label class="campo">Margen (%) · vacío = el general<input id="s-margen" type="number" min="0" step="5" style="width:120px"></label>
+      <button class="btn claro" id="s-guardar" type="button">Aplicar a la sección</button>
+      <button class="btn claro" id="s-ocultar" type="button">Ocultar sección</button>
+      <button class="btn claro" id="s-mostrar" type="button">Mostrar sección</button>
+    </div>
+    <div class="msg" id="r-msg"></div>
+  </section>
+
+  <section class="bloque">
+    <h2>Cargar costos desde Excel</h2>
+    <p class="ayuda">Descargue la plantilla con todos los productos, llene la columna <b>Costo</b> (y si quiere, Margen o Precio manual) y súbala. Solo se cambian las filas que traigan datos.</p>
+    <div class="fila">
+      <button class="btn claro" id="x-plantilla" type="button">Descargar plantilla Excel</button>
+      <label class="btn tinta" for="x-archivo" style="display:inline-block">Subir Excel con costos</label>
+      <input id="x-archivo" type="file" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+    <div class="msg" id="x-msg"></div>
+  </section>
+
+  <section class="bloque">
+    <h2>Productos</h2>
+    <p class="ayuda">Escriba el costo y presione Enter o salga de la casilla: el precio se calcula y se guarda solo. «Otra tienda» es el precio real que tenía el mismo producto en otra tienda en línea el día que se consultó; si su precio es menor, la tienda muestra el ahorro.</p>
+    <div class="fila" style="margin-bottom:12px">
+      <label class="campo" style="flex:1;min-width:200px">Buscar<input id="f-busca" type="search" placeholder="Nombre o código"></label>
+      <label class="campo">Sección<select id="f-sec"></select></label>
+      <label class="campo">Mostrar<select id="f-ver"><option value="">Todos</option><option value="sin">Sin costo</option><option value="con">Con costo</option><option value="caro">Más caros que otra tienda</option><option value="oculto">Ocultos</option></select></label>
+    </div>
+    <div class="tabla-caja"><table>
+      <thead><tr><th>Producto</th><th class="num">Costo</th><th class="num">Margen %</th><th class="num">Precio manual</th><th class="num">Precio de venta</th><th class="num">Ganancia</th><th class="num">Otra tienda</th><th>Estado</th><th>En tienda</th></tr></thead>
+      <tbody id="filas"></tbody>
+    </table></div>
+    <div class="pag" id="pag"></div>
+  </section>
+
+  <section class="bloque" id="b-mensajes">
+    <h2>Mensajes de temporada</h2>
+    <p class="ayuda">Envíelos solo a los clientes cuyo pedido dice «Ofertas por WhatsApp: Sí autoriza». A quien responda NO, no le vuelva a escribir. Cambie lo que está entre corchetes antes de enviar.</p>
+    <div style="margin:0 0 12px"><b>Inicio de temporada</b><textarea readonly style="width:100%;min-height:84px;font:inherit;border:1px solid var(--linea);border-radius:12px;padding:10px;margin:6px 0" id="msj0">¡Hola! Te escribe Kasu Store 🎄 Ya llegaron los regalos de Navidad: combos armados para mamá, papá, la oficina y los abuelos, y tarjetas de regalo para que elijan lo que quieran. Míralos en kasustore.co. Pagas al recibir. Si no quieres recibir más mensajes, responde NO.</textarea><button class="btn" type="button" data-copiar="msj0">Copiar</button></div>
+    <div style="margin:0 0 12px"><b>Amigo secreto</b><textarea readonly style="width:100%;min-height:84px;font:inherit;border:1px solid var(--linea);border-radius:12px;padding:10px;margin:6px 0" id="msj1">¡Hola! ¿Ya tienes el regalo del amigo secreto? 🎁 En kasustore.co tienes ideas por menos de $30.000, $50.000 y $100.000, y te lo enviamos envuelto si quieres. Si no quieres recibir más mensajes, responde NO.</textarea><button class="btn" type="button" data-copiar="msj1">Copiar</button></div>
+    <div style="margin:0 0 12px"><b>Últimos días</b><textarea readonly style="width:100%;min-height:84px;font:inherit;border:1px solid var(--linea);border-radius:12px;padding:10px;margin:6px 0" id="msj2">¡Hola! Kasu Store 🎄 Para que tu regalo llegue antes del 24, pide a más tardar el [fecha]. Y si se te hizo tarde, una tarjeta de regalo Kasu siempre llega a tiempo. kasustore.co. Si no quieres recibir más mensajes, responde NO.</textarea><button class="btn" type="button" data-copiar="msj2">Copiar</button></div>
+  </section>
+  </div>
+</main>
+
+<script src="kasu-config.js"></script>
+<script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-copiar]");if(!b)return;var x=document.getElementById(b.dataset.copiar);x.select();(navigator.clipboard?navigator.clipboard.writeText(x.value):Promise.reject()).then(function(){b.textContent="Copiado";},function(){document.execCommand&&document.execCommand("copy");b.textContent="Copiado";});setTimeout(function(){b.textContent="Copiar";},2000);});</script>
+<script src="productos.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+var CAT=(window.KASU_PRODUCTOS||[]).slice();
+var FB=window.KASU_FIREBASE, LS='kasu_precios_prueba';
+// datos: {regla:{margen,redondeo,secciones:{cat:margen}}, items:{id:{costo,margen,manual}}}
+var datos={regla:{margen:150,redondeo:'900',secciones:{}},items:{}};
+var db=null, pagina=0, POR=50;
+
+function pesos(n){return '$'+Math.round(n||0).toLocaleString('es-CO');}
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function num(v){if(v==null)return null;var s=String(v).replace(/[$\s]/g,'');if(s==='')return null;if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(',','.');var n=Number(s);return isFinite(n)?n:NaN;}
+function redondear(v,m){if(!(v>0))return 0;if(m==='1000')return Math.ceil(v/1000)*1000;if(m==='100')return Math.ceil(v/100)*100;return Math.ceil((v+100)/1000)*1000-100;}
+function margenDe(p){var it=datos.items[p.id]||{};if(it.margen!=null&&it.margen!=='')return Number(it.margen);var s=datos.regla.secciones||{};if(s[p.cat]!=null)return Number(s[p.cat]);return Number(datos.regla.margen)||0;}
+function precioDe(p){var it=datos.items[p.id]||{};if(it.manual>0)return Math.round(it.manual);if(it.costo>0)return redondear(it.costo*(1+margenDe(p)/100),datos.regla.redondeo);return p.precio;}
+// Lo que lee la tienda: solo el precio final de cada producto con costo o precio manual
+function publico(){var o={};CAT.forEach(function(p){var it=datos.items[p.id];if(!it)return;var x={};if(it.costo>0||it.manual>0)x.precio=precioDe(p);if(it.oculto)x.oculto=true;if(x.precio||x.oculto)o[p.id]=x;});return o;}
+
+/* ── Guardar ── */
+function guardar(cambios){
+  if(!db){try{localStorage.setItem(LS,JSON.stringify(datos));localStorage.setItem(LS+'_publico',JSON.stringify(publico()));}catch(e){}return Promise.resolve();}
+  var u={};Object.keys(cambios||{}).forEach(function(k){u[k]=cambios[k];});
+  u['precios']=publico();
+  return db.ref().update(u);
+}
+function guardarItem(id){var it=datos.items[id]||null;var c={};c['costos/items/'+id]=it&&(it.costo>0||it.manual>0||it.oculto||(it.margen!=null&&it.margen!==''))?it:null;return guardar(c);}
+
+/* ── Pintar ── */
+function secciones(){return CAT.map(function(p){return p.cat;}).filter(function(c,i,a){return a.indexOf(c)===i;}).sort();}
+function resumen(){
+  var con=0,bajo=0,oc=0;CAT.forEach(function(p){var it=datos.items[p.id]||{};if(it.oculto)oc++;if(it.costo>0||it.manual>0)con++;if(p.ref>0&&precioDe(p)<p.ref)bajo++;});
+  $('t-total').textContent=CAT.length.toLocaleString('es-CO');$('t-costo').textContent=con.toLocaleString('es-CO');$('t-sin').textContent=(CAT.length-con).toLocaleString('es-CO');$('t-bajo').textContent=bajo.toLocaleString('es-CO');$('t-oc').textContent=oc.toLocaleString('es-CO');
+}
+function lista(){
+  var q=$('f-busca').value.trim().toLowerCase(),s=$('f-sec').value,v=$('f-ver').value;
+  return CAT.filter(function(p){
+    var it=datos.items[p.id]||{},tiene=it.costo>0||it.manual>0;
+    if(s&&p.cat!==s)return false;
+    if(v==='sin'&&tiene)return false;if(v==='con'&&!tiene)return false;if(v==='caro'&&!(p.ref>0&&precioDe(p)>=p.ref))return false;if(v==='oculto'&&!it.oculto)return false;
+    return !q||(p.nombre+' '+(p.titulo||'')+' '+p.id+' '+(p.sku||'')).toLowerCase().indexOf(q)>=0;
+  });
+}
+function filaHTML(p){
+  var it=datos.items[p.id]||{},pr=precioDe(p),tiene=it.costo>0||it.manual>0,gan=it.costo>0?pr-it.costo:null;
+  var est=!tiene?'<span class="et gr">Sin costo</span>':(p.ref>0&&pr<p.ref?'<span class="et ok">Más barato</span>':(p.ref>0?'<span class="et av">Igual o más caro</span>':'<span class="et ok">Listo</span>'));
+  return '<tr data-id="'+p.id+'"><td><div class="nom">'+esc(p.nombre)+'</div><div class="sec">'+esc(p.cat)+' · '+esc(p.id)+'</div></td>'
+    +'<td class="num"><input inputmode="numeric" data-k="costo" value="'+(it.costo>0?it.costo:'')+'" aria-label="Costo de '+esc(p.nombre)+'"></td>'
+    +'<td class="num"><input class="corto" inputmode="numeric" data-k="margen" placeholder="'+margenDe(Object.assign({},p))+'" value="'+(it.margen!=null&&it.margen!==''?it.margen:'')+'" aria-label="Margen de '+esc(p.nombre)+'"></td>'
+    +'<td class="num"><input inputmode="numeric" data-k="manual" value="'+(it.manual>0?it.manual:'')+'" aria-label="Precio manual de '+esc(p.nombre)+'"></td>'
+    +'<td class="num"><b>'+pesos(pr)+'</b></td><td class="num">'+(gan==null?'—':pesos(gan))+'</td><td class="num">'+(p.ref>0?pesos(p.ref):'—')+'</td><td>'+est+'</td><td><label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-vis'+(it.oculto?'':' checked')+' style="width:auto"> '+(it.oculto?'Oculto':'Visible')+'</label></td></tr>';
+}
+function pintar(){
+  var l=lista(),tot=Math.max(1,Math.ceil(l.length/POR));if(pagina>=tot)pagina=tot-1;
+  $('filas').innerHTML=l.slice(pagina*POR,(pagina+1)*POR).map(filaHTML).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--tinta-suave);padding:24px">No hay productos con ese filtro.</td></tr>';
+  $('pag').innerHTML=tot>1?'<button class="btn claro" type="button" data-pg="-1"'+(pagina?'':' disabled')+'>Anterior</button><span>Página '+(pagina+1)+' de '+tot+' · '+l.length+' productos</span><button class="btn claro" type="button" data-pg="1"'+(pagina<tot-1?'':' disabled')+'>Siguiente</button>':'<span>'+l.length+' productos</span>';
+  resumen();
+}
+function msg(id,t,ok){var m=$(id);m.className='msg '+(ok?'ok':'mal');m.textContent=t;}
+
+/* ── Edición en la tabla ── */
+$('filas').addEventListener('change',function(e){
+  var inp=e.target.closest('input[data-k]');if(!inp)return;var tr=inp.closest('tr'),id=tr.dataset.id,k=inp.dataset.k,v=num(inp.value);
+  if(isNaN(v)||v<0){inp.setCustomValidity('Escriba solo números');inp.reportValidity();return;}inp.setCustomValidity('');
+  var it=datos.items[id]=datos.items[id]||{};if(v==null)delete it[k];else it[k]=v;
+  guardarItem(id).then(function(){var p=CAT.filter(function(x){return x.id===id;})[0];var nuevo=document.createElement('tbody');nuevo.innerHTML=filaHTML(p);tr.replaceWith(nuevo.firstChild);resumen();},function(){alert('No se pudo guardar. Revise la conexión e intente de nuevo.');});
+});
+$('filas').addEventListener('change',function(e){
+  var c=e.target.closest('input[data-vis]');if(!c)return;var tr=c.closest('tr'),id=tr.dataset.id;var it=datos.items[id]=datos.items[id]||{};
+  if(c.checked)delete it.oculto;else it.oculto=true;
+  guardarItem(id).then(function(){var p=CAT.filter(function(x){return x.id===id;})[0];var nuevo=document.createElement('tbody');nuevo.innerHTML=filaHTML(p);tr.replaceWith(nuevo.firstChild);resumen();});
+});
+$('filas').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.matches('input[data-k]')){e.preventDefault();e.target.blur();}});
+$('pag').addEventListener('click',function(e){var b=e.target.closest('[data-pg]');if(b){pagina+=Number(b.dataset.pg);pintar();window.scrollTo({top:$('filas').closest('.bloque').offsetTop-70});}});
+['f-busca','f-sec','f-ver'].forEach(function(i){$(i).addEventListener('input',function(){pagina=0;pintar();});});
+
+/* ── Regla ── */
+$('r-guardar').addEventListener('click',function(){
+  var m=num($('r-margen').value);if(m==null||isNaN(m)||m<0){msg('r-msg','Escriba el margen en números, por ejemplo 150.',false);return;}
+  datos.regla.margen=m;datos.regla.redondeo=$('r-redondeo').value;
+  guardar({'costos/regla/margen':m,'costos/regla/redondeo':datos.regla.redondeo}).then(function(){msg('r-msg','Regla guardada. Los precios de los productos con costo se recalcularon.',true);pintar();});
+});
+$('s-guardar').addEventListener('click',function(){
+  var s=$('s-sec').value,m=num($('s-margen').value);if(isNaN(m)||(m!=null&&m<0)){msg('r-msg','Escriba el margen en números.',false);return;}
+  datos.regla.secciones=datos.regla.secciones||{};if(m==null)delete datos.regla.secciones[s];else datos.regla.secciones[s]=m;
+  var c={};c['costos/regla/secciones/'+s.replace(/[.#$\[\]\/]/g,'_')]=m;
+  guardar(c).then(function(){msg('r-msg',m==null?'«'+s+'» vuelve a usar el margen general.':'«'+s+'» queda con margen de '+m+'%.',true);pintar();});
+});
+function verSeccion(ocultar){
+  var s=$('s-sec').value,c={},n=0;
+  CAT.forEach(function(p){if(p.cat!==s)return;var it=datos.items[p.id]=datos.items[p.id]||{};if(ocultar)it.oculto=true;else delete it.oculto;c['costos/items/'+p.id]=(it.costo>0||it.manual>0||it.oculto||(it.margen!=null&&it.margen!==''))?it:null;n++;});
+  guardar(c).then(function(){msg('r-msg',(ocultar?'Se ocultaron ':'Se muestran de nuevo ')+n+' productos de «'+s+'».',true);pintar();});
+}
+$('s-ocultar').addEventListener('click',function(){verSeccion(true);});
+$('s-mostrar').addEventListener('click',function(){verSeccion(false);});
+$('s-sec').addEventListener('change',function(){var v=(datos.regla.secciones||{})[this.value];$('s-margen').value=v==null?'':v;});
+
+/* ── Excel ── */
+var COLS=['Código','Producto','Sección','Costo','Margen % (opcional)','Precio manual (opcional)','Precio en otra tienda'];
+$('x-plantilla').addEventListener('click',function(){
+  if(!window.XLSX){msg('x-msg','No se pudo cargar la herramienta de Excel. Revise la conexión y recargue la página.',false);return;}
+  var filas=[COLS].concat(CAT.map(function(p){var it=datos.items[p.id]||{};return [p.id,p.nombre,p.cat,it.costo||'',it.margen!=null?it.margen:'',it.manual||'',p.ref||''];}));
+  var ws=XLSX.utils.aoa_to_sheet(filas);ws['!cols']=[{wch:12},{wch:48},{wch:20},{wch:12},{wch:18},{wch:22},{wch:20}];
+  var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Costos');XLSX.writeFile(wb,'Kasu-costos.xlsx');
+});
+$('x-archivo').addEventListener('change',function(){
+  var f=this.files[0];this.value='';if(!f)return;
+  if(!window.XLSX){msg('x-msg','No se pudo cargar la herramienta de Excel. Revise la conexión y recargue la página.',false);return;}
+  var r=new FileReader();
+  r.onload=function(){
+    var filas;try{var wb=XLSX.read(r.result,{type:'array'});filas=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});}catch(e){msg('x-msg','No se pudo leer el archivo. Súbalo como Excel (.xlsx).',false);return;}
+    var cab=(filas.shift()||[]).map(function(h){return String(h).toLowerCase();});
+    var ix=function(t){return cab.findIndex(function(h){return h.indexOf(t)===0;});};
+    var iC=ix('código')>=0?ix('código'):ix('codigo'),iCo=ix('costo'),iM=ix('margen'),iP=ix('precio manual');
+    if(iC<0||iCo<0){msg('x-msg','El archivo debe tener las columnas «Código» y «Costo». Descargue la plantilla y úsela como base.',false);return;}
+    var porId={};CAT.forEach(function(p){porId[p.id]=p;if(p.sku)porId[String(p.sku)]=p;});
+    var ok=0,nf=[],malos=[],cambios={};
+    filas.forEach(function(row,n){
+      var cod=String(row[iC]||'').trim();if(!cod)return;var p=porId[cod]||porId['p'+cod];
+      var co=num(row[iCo]),m=iM>=0?num(row[iM]):null,pm=iP>=0?num(row[iP]):null;
+      if(co==null&&m==null&&pm==null)return;
+      if(!p){nf.push(cod);return;}
+      if(isNaN(co)||isNaN(m)||isNaN(pm)||(co!=null&&co<0)){malos.push('fila '+(n+2));return;}
+      var it=datos.items[p.id]=datos.items[p.id]||{};if(co!=null)it.costo=co;if(m!=null)it.margen=m;if(pm!=null)it.manual=pm;
+      cambios['costos/items/'+p.id]=it;ok++;
+    });
+    guardar(cambios).then(function(){
+      msg('x-msg',(ok===1?'1 producto actualizado.':ok+' productos actualizados.')+(nf.length?' '+(nf.length===1?'1 código no existe':nf.length+' códigos no existen')+' en la tienda ('+nf.slice(0,5).join(', ')+(nf.length>5?'…':'')+').':'')+(malos.length?' Revise '+malos.slice(0,5).join(', ')+': el costo no es un número.':''),ok>0);
+      pagina=0;pintar();
+    },function(){msg('x-msg','No se pudo guardar. Revise la conexión e intente de nuevo.',false);});
+  };
+  r.readAsArrayBuffer(f);
+});
+
+/* ── Arranque ── */
+function llenarSelects(){var ss=secciones();$('f-sec').innerHTML='<option value="">Todas</option>'+ss.map(function(s){return '<option>'+esc(s)+'</option>';}).join('');$('s-sec').innerHTML=ss.map(function(s){return '<option>'+esc(s)+'</option>';}).join('');}
+function empezar(){
+  $('r-margen').value=datos.regla.margen;$('r-redondeo').value=datos.regla.redondeo||'900';
+  llenarSelects();var v=(datos.regla.secciones||{})[$('s-sec').value];$('s-margen').value=v==null?'':v;
+  $('trabajo').hidden=false;pintar();
+}
+function cargarScript(src){return new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s);});}
+if(!FB){
+  $('modo').hidden=false;
+  try{var g=JSON.parse(localStorage.getItem(LS)||'null');if(g&&g.regla)datos=g;}catch(e){}
+  datos.items=datos.items||{};empezar();
+}else{
+  Promise.all([cargarScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js')]).then(function(){return Promise.all([cargarScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js'),cargarScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js')]);}).then(function(){
+    firebase.initializeApp(FB);
+    firebase.auth().onAuthStateChanged(function(u){
+      if(!u){$('b-ingreso').hidden=false;$('trabajo').hidden=true;return;}
+      $('b-ingreso').hidden=true;$('quien').innerHTML=esc(u.email)+' · <a href="#" id="salir">Salir</a>';
+      db=firebase.database();
+      db.ref('costos').once('value').then(function(s){var v=s.val()||{};datos.regla=Object.assign({margen:150,redondeo:'900',secciones:{}},v.regla||{});datos.items=v.items||{};empezar();},function(){msg('i-msg','Esta cuenta no tiene permiso para ver los costos.',false);});
+    });
+    $('i-entrar').addEventListener('click',function(){firebase.auth().signInWithEmailAndPassword($('i-correo').value.trim(),$('i-clave').value).catch(function(){msg('i-msg','Correo o contraseña incorrectos.',false);});});
+    document.addEventListener('click',function(e){if(e.target.id==='salir'){e.preventDefault();firebase.auth().signOut();}});
+  },function(){$('b-ingreso').hidden=false;msg('i-msg','No se pudo conectar. Revise el internet y recargue.',false);});
+}
+window._panel={datos:datos,precioDe:precioDe,publico:publico};
+})();
+</script>
+</body>
+</html>
