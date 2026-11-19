@@ -76,6 +76,8 @@ header .ancho{display:flex;align-items:center;gap:16px;padding-top:4px;padding-b
 .precio .ref{color:var(--tinta-suave);font-size:13px;font-weight:600}
 .precio{flex-wrap:wrap}.precio .tachado{display:flex;flex-direction:column;line-height:1.1}.precio .tachado s{font-size:15px}.precio .tachado small{font-size:11px;color:var(--tinta-suave);font-weight:600}
 .juntos{margin:6px 0 0;font-size:13px;font-weight:700;color:var(--ok)}
+.ahorro.lanz{background:#D7263D;font-size:14px;padding:3px 11px}
+.lanz-n{font-size:12.5px;font-weight:700;color:#B01A30;margin:4px 0 0}
 .nota-ref{font-size:12px;color:var(--tinta-suave);margin:4px 0 0}
 .ahorro{background:var(--tinta);color:var(--blanco);border-radius:999px;font-size:13px;font-weight:700;padding:2px 10px}
 main{padding:28px 0 48px}
@@ -168,6 +170,39 @@ dialog::backdrop{background:rgba(18,54,46,.55)}
 .es-regalo .acepto{margin:4px 0}
 .es-regalo .campos{margin-top:8px}
 .es-regalo textarea{width:100%;min-height:64px;font:inherit;border:1.5px solid #CFE6DD;border-radius:12px;padding:10px;resize:vertical}
+.carrusel{padding-top:18px}
+.cr{position:relative;border-radius:28px;overflow:hidden;height:clamp(260px,38vw,400px);background:var(--tinta)}
+.cr .slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .8s ease}
+.cr .slide.on{opacity:1;visibility:visible}
+.cr .slide img{width:100%;height:100%;object-fit:cover;display:block}
+.cr .slide:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(18,54,46,.82) 0%,rgba(18,54,46,.55) 42%,rgba(18,54,46,0) 72%)}
+.cr .txt{position:absolute;left:clamp(20px,4vw,48px);top:50%;transform:translateY(-50%);z-index:2;color:#fff;max-width:min(30ch,70%)}
+.cr h2{font-size:clamp(30px,4.6vw,54px);font-weight:800;color:#fff}
+.cr p{font-size:clamp(15px,1.6vw,19px);margin:10px 0 18px;color:#E6F8F1}
+.cr .emo{display:none;position:absolute;right:8%;top:50%;transform:translateY(-50%);font-size:clamp(90px,14vw,170px);z-index:1;filter:drop-shadow(0 8px 18px rgba(0,0,0,.25))}
+.cr .slide.sinfoto{background:linear-gradient(120deg,var(--c1,#12362E),var(--c2,#2A7A64))}
+.cr .slide.sinfoto .emo{display:block}
+.cr .slide.sinfoto:after{background:none}
+.cr .puntos-cr{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
+.cr .puntos-cr button{width:11px;height:11px;border-radius:50%;border:2px solid #fff;background:transparent;padding:0;cursor:pointer}
+.cr .puntos-cr button[aria-current=true]{background:#fff}
+@media (max-width:760px){.cr .slide:after{background:linear-gradient(0deg,rgba(18,54,46,.88) 0%,rgba(18,54,46,.5) 55%,rgba(18,54,46,.1) 100%)}.cr .txt{top:auto;bottom:40px;transform:none;max-width:88%}.cr .emo{top:12px;right:14px;transform:none;font-size:50px}}
+.combo-banda{display:grid;grid-template-columns:1fr 1.1fr;border-radius:28px;overflow:hidden;background:#FFE7D6;margin:0 0 34px}
+.combo-banda .foto{min-height:220px;background:linear-gradient(120deg,#FF7A2F,#FFB37A);display:grid;place-items:center;font-size:96px;position:relative}
+.combo-banda .foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.combo-banda .txt{padding:26px 28px;align-self:center}
+.combo-banda h2{font-size:clamp(28px,3.4vw,40px);font-weight:800}
+.combo-banda p{margin:8px 0 16px;font-size:17px}
+.asi{display:grid;grid-template-columns:.9fr 1.1fr;gap:22px;align-items:stretch;margin-top:40px}
+.asi .foto{border-radius:26px;overflow:hidden;min-height:260px;background:linear-gradient(120deg,#6FD9B8,#12362E);display:grid;place-items:center;font-size:110px;position:relative}
+.asi .foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.asi .foto b{position:absolute;left:16px;bottom:16px;background:#fff;color:var(--tinta);border-radius:999px;padding:6px 14px;font-size:15px;font-family:var(--display);z-index:2}
+.asi .pasos{margin-top:0;grid-template-columns:1fr}
+.asi h2{font-size:30px;margin-bottom:12px}
+@media (max-width:760px){.combo-banda,.asi{grid-template-columns:1fr}.combo-banda .foto{min-height:180px}}
+.col{position:relative;overflow:hidden}
+.col .col-foto{display:block;width:calc(100% + 36px);max-width:none;margin:-18px -18px 6px;height:96px;object-fit:cover}
+@media (max-width:900px){.col .col-foto{width:calc(100% + 28px);margin:-14px -14px 4px;height:78px}}
 .acepto{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin-top:14px}.acepto input{margin-top:4px;width:18px;height:18px;flex:none}.acepto a{color:var(--naranja-fuerte)}
 .error{color:#A32012;font-weight:600;font-size:14px}
 .nota{background:var(--menta-suave);border-radius:14px;padding:12px;font-size:14px}
@@ -187,6 +222,7 @@ a.btn{text-decoration:none;text-align:center;display:block}
 <div class="luces" id="luces" aria-hidden="true"></div>
 <div class="nieve" id="nieve" aria-hidden="true"></div>
 
+<section class="carrusel" aria-label="Lo nuevo en Kasu"><div class="ancho"><div class="cr" id="cr"></div></div></section>
 <section class="portada" id="inicio"><div class="ancho">
   <div><span class="cinta" id="cinta">🎄 Navidad Kasu <span id="faltan"></span></span><h1>Lo viste, lo quieres, <em>te llega.</em></h1>
     <p>Inventos prácticos para la cocina, la casa y tu día a día. Pides en dos minutos y pagas cuando lo recibes.</p>
@@ -199,14 +235,17 @@ a.btn{text-decoration:none;text-align:center;display:block}
   <p class="ejemplo"><b>Tienda en construcción.</b> Si un producto todavía no muestra su foto, ya viene en camino.</p>
   <h2 style="font-size:34px">¿Qué andas buscando?</h2>
   <div class="cols" id="cols"></div>
+  <div class="combo-banda" id="combo-banda"><div class="foto">🎁<img src="img/combos.jpg" alt="" onerror="this.remove()"></div><div class="txt"><h2>Más barato juntos</h2><p>Combos armados por Kasu con productos que se usan juntos. Siempre cuestan menos que comprarlos por separado, y te mostramos cuánto ahorras.</p><button class="btn" type="button" data-col="combos">Ver los combos</button></div></div>
   <h2 style="font-size:34px" id="titulo-lista">Todo el catálogo</h2>
   <div class="cats" id="cats"></div>
   <div class="grilla" id="grilla"></div>
+  <div class="asi"><div class="foto">📦<img src="img/asi-te-llega.jpg" alt="" onerror="this.remove()"><b>Pagas cuando lo recibes</b></div>
+  <div><h2>Así te llega</h2>
   <div class="pasos">
     <div class="paso"><b>1. Lo eliges</b>Agrégalo al carrito o cómpralo de una vez.</div>
     <div class="paso"><b>2. Nos dices a dónde</b>Nombre, celular, ciudad y dirección. Nada más.</div>
     <div class="paso"><b>3. Te llega</b>Pagas al recibir, o en línea con tarjeta, PSE, Nequi o a cuotas.</div>
-  </div>
+  </div></div></div>
 </div></main>
 
 <a class="wa" id="wa" href="#" target="_blank" rel="noopener" hidden>Escríbenos por WhatsApp</a>
@@ -222,6 +261,7 @@ a.btn{text-decoration:none;text-align:center;display:block}
 
 <script src="kasu-config.js"></script>
 <script src="productos.js"></script>
+<script src="productos-expo.js"></script>
 <script src="combos-kasu.js"></script>
 <script>
 /* ══ Lo que se configura por negocio (después lo administra el panel) ══ */
@@ -235,7 +275,8 @@ var CONFIG={
   envoltura:5000,              // valor de envolver el pedido para regalo (todo en un paquete); 0 = gratis
   tarjetas:[50000,100000,200000], // valores de las tarjetas de regalo
   tarjetaVigencia:'un año',    // vigencia de las tarjetas de regalo desde la compra
-  bajoOtraTienda:0             // % por debajo del precio real de la otra tienda (mientras no haya precio del panel); 0 = igual
+  lanzamientoHasta:'2026-12-31', // precios de lanzamiento: hasta este día; desde el siguiente se cobra el precio regular (el tachado)
+  bajoOtraTienda:1             // % por debajo del precio real de la otra tienda (mientras no haya precio del panel); 0 = igual
 };
 var MUESTRA=[
  {id:'molino',nombre:'Molino multiusos',cat:'Cocina',precio:149900,antes:189900,ico:'molino',desc:'Muele maíz, carne, café y granos con una sola manivela.',puntos:['Cuerpo metálico, se fija a la mesa','Se desarma para lavarlo','Incluye dos discos de molienda']},
@@ -248,9 +289,16 @@ var MUESTRA=[
  {id:'corrector',nombre:'Corrector de postura',cat:'Bienestar',precio:44900,antes:59900,ico:'corrector',desc:'Te recuerda enderezar la espalda mientras trabajas.',puntos:['Ajustable, tallas S a XL','Tela que respira','No se nota bajo la ropa']}
 ];
 var PRODUCTOS=(window.KASU_PRODUCTOS&&window.KASU_PRODUCTOS.length)?window.KASU_PRODUCTOS:MUESTRA;
+// Segunda tienda: se suma al catálogo (y quita de la primera los que allí salen más baratos)
+if(window.KASU_PRODUCTOS_2){var _rz=window.KASU_REEMPLAZA||[];PRODUCTOS=PRODUCTOS.filter(function(p){return _rz.indexOf(p.id)<0;}).concat(window.KASU_PRODUCTOS_2);}
 // Precio de arranque: un poco más barato que el precio REAL de la otra tienda (ref), redondeado hacia abajo a centenas.
 // Cuando el panel tenga el costo y el precio de un producto, manda el del panel.
-(function(){var d=Number(CONFIG.bajoOtraTienda)||0;if(d<=0)return;
+// Lanzamiento: mientras dure se vende con descuento sobre el precio regular de Kasu (el tachado).
+// Al terminar, el precio regular pasa a ser el precio de venta: así el descuento anunciado es real.
+var LANZ_FIN=CONFIG.lanzamientoHasta?new Date(CONFIG.lanzamientoHasta+'T23:59:59'):null;
+function enLanzamiento(){return !!(LANZ_FIN&&new Date()<=LANZ_FIN);}
+if(LANZ_FIN&&!enLanzamiento())PRODUCTOS.forEach(function(p){if(p.regular>0){p.precio=p.regular;p.ref=0;}});
+(function(){var d=Number(CONFIG.bajoOtraTienda)||0;if(d<=0||!enLanzamiento())return;
   function baja(v){return Math.floor(v*(1-d/100)/100)*100;}
   PRODUCTOS.forEach(function(p){if(p.ref>0&&p.precio>=p.ref){p.precio=baja(p.ref);(p.variantes||[]).forEach(function(v){if(v.precio>0)v.precio=baja(v.precio);});}});
 })();
@@ -312,7 +360,7 @@ function fotoCombo(p,grande){
   }).join('')+'</div><span class="combo-tag">🎁 Combo · '+n+' productos</span><img class="sello" src="logo.jpg" alt="">';
 }
 function foto(p,grande){if(p.combo&&p.fotos&&p.fotos.length>1)return fotoCombo(p,grande);if(!p.img)return dibujo(p.ico||RESP[p.cat]||'organizador');var src=grande&&p.grande?p.grande:p.img,otra=grande&&p.grande?p.img:(p.cdn||'');return '<img src="'+esc(src)+'" alt="'+esc(p.nombre)+'" loading="lazy" data-resp="'+esc(p.cat||'')+'" data-otra="'+esc(otra)+'"'+(p.sello&&src===p.img?' data-marca="1"':'')+(p.sello&&otra===p.img?' data-quita="1"':'')+'>'+(p.sello&&src===p.img?'':'<img class="sello" src="logo.jpg" alt="">');}
-var RESP={'Tarjetas de regalo':'regalo','Herramientas y carro':'molino','Sonido y viaje':'luz','Cocina':'picadora','Hogar':'organizador','Bienestar':'masajeador','Filtros de agua':'licuadora','Cama y descanso':'organizador','Niños y mascotas':'organizador','Industria y bodega':'mopa'};
+var RESP={'Tarjetas de regalo':'regalo','Moda y calzado':'corrector','Herramientas y carro':'molino','Sonido y viaje':'luz','Cocina':'picadora','Hogar':'organizador','Bienestar':'masajeador','Filtros de agua':'licuadora','Cama y descanso':'organizador','Niños y mascotas':'organizador','Industria y bodega':'mopa'};
 document.addEventListener('error',function(ev){var i=ev.target;if(i.tagName==='IMG'&&i.dataset&&'resp' in i.dataset){if(i.dataset.otra){var o=i.dataset.otra;i.dataset.otra='';i.src=o;if(i.dataset.quita){var q=i.parentNode&&i.parentNode.querySelector('.sello');if(q)q.remove();}if(i.dataset.marca){i.dataset.marca='';var se=document.createElement('img');se.className='sello';se.src='logo.jpg';se.alt='';i.after(se);}return;}var sel=i.parentNode&&i.parentNode.querySelector('.sello');if(sel)sel.remove();var d=document.createElement('div');d.innerHTML=dibujo(RESP[i.dataset.resp]||'organizador');i.replaceWith(d.firstChild);}},true);
 var carro={},cat='Todos',busca='',tope=24,col='';
 // Colecciones: otra forma de entrar a la tienda, por lo que la persona necesita y no por categoría
@@ -331,6 +379,27 @@ var COLS=[
  {id:'ninos',t:'Para los niños',s:'Bloques y juegos para armar',f:function(p){return p.cat==='Niños y mascotas'&&!/perro|gato|mascota/.test(txt(p));}},
  {id:'carro',t:'Para el carro y la moto',s:'Limpieza, aire y herramientas',f:function(p){return p.cat==='Herramientas y carro'&&/(^|[^a-záéíóú])(carro|auto|autom[oó]vil|moto|veh[ií]culos?)([^a-záéíóú]|$)/.test(txt(p));}}
 ];
+// Fotos de gente usando los productos (gratuitas, de Pexels o Unsplash). Se guardan en img/ con estos nombres;
+// si una foto no está, esa parte se ve con un color y un dibujo, sin quedar vacía.
+var FOTO_COL={combos:'combos.jpg',navidad:'portada-navidad.jpg',cocina:'portada-cocina.jpg',dormir:'portada-descanso.jpg',mascota:'portada-mascota.jpg',ninos:'portada-familia.jpg',carro:'col-carro.jpg'};
+var PORTADA=[
+  {foto:'portada-navidad.jpg',emo:'🎄',c1:'#B01A30',c2:'#D7263D',t:'Regalos que sí se usan',s:'Ideas para la familia y el amigo secreto, con envoltura si la quieres.',b:'Ver regalos',col:'navidad',navidad:1},
+  {foto:'portada-cocina.jpg',emo:'🍳',c1:'#12362E',c2:'#2A7A64',t:'Cocinar rico, sin enredos',s:'Inventos que te ahorran tiempo en la cocina todos los días.',b:'Ver cocina',col:'cocina'},
+  {foto:'portada-descanso.jpg',emo:'🛋️',c1:'#2F2A6B',c2:'#5B54B5',t:'Tu rato de descanso',s:'Almohadas, cobijas y masajeadores para llegar a casa y desconectarte.',b:'Ver descanso',col:'dormir'},
+  {foto:'portada-familia.jpg',emo:'🧸',c1:'#D9540B',c2:'#FF7A2F',t:'Tardes en familia',s:'Juguetes para armar, inventar y jugar juntos.',b:'Ver para niños',col:'ninos'},
+  {foto:'portada-mascota.jpg',emo:'🐶',c1:'#0E7A55',c2:'#3CB98C',t:'Para el que te espera en casa',s:'Juguetes y accesorios para tu perro o tu gato.',b:'Ver mascotas',col:'mascota'}
+];
+function armarCarrusel(){
+  var nav=document.body.classList.contains('navidad'),ss=PORTADA.filter(function(s){return !s.navidad||nav;}).filter(function(s){var c=COLS.filter(function(x){return x.id===s.col;})[0];return !c||visibles().some(c.f);});
+  if(!ss.length){$('cr').parentNode.parentNode.hidden=true;return;}
+  $('cr').innerHTML=ss.map(function(s,i){return '<div class="slide'+(i===0?' on':'')+'" style="--c1:'+s.c1+';--c2:'+s.c2+'"><img src="img/'+s.foto+'" alt="" onerror="this.parentNode.classList.add(\'sinfoto\');this.remove()"><span class="emo" aria-hidden="true">'+s.emo+'</span><div class="txt"><h2>'+esc(s.t)+'</h2><p>'+esc(s.s)+'</p><button class="btn" type="button" data-col="'+s.col+'">'+esc(s.b)+'</button></div></div>';}).join('')
+    +(ss.length>1?'<div class="puntos-cr">'+ss.map(function(s,i){return '<button type="button" aria-label="Ver '+esc(s.t)+'" aria-current="'+(i===0)+'" data-cr="'+i+'"></button>';}).join('')+'</div>':'');
+  var act=0,pausa=false,quieto=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function ir(i){var sl=$('cr').querySelectorAll('.slide'),pt=$('cr').querySelectorAll('[data-cr]');act=(i+sl.length)%sl.length;[].forEach.call(sl,function(x,k){x.classList.toggle('on',k===act);});[].forEach.call(pt,function(x,k){x.setAttribute('aria-current',k===act);});}
+  $('cr').addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-cr]');if(b)ir(+b.dataset.cr);});
+  $('cr').addEventListener('mouseenter',function(){pausa=true;});$('cr').addEventListener('mouseleave',function(){pausa=false;});
+  if(ss.length>1&&!quieto)setInterval(function(){if(!pausa&&!document.hidden)ir(act+1);},6500);
+}
 function coleccion(){return COLS.filter(function(c){return c.id===col;})[0];}
 try{carro=JSON.parse(localStorage.getItem('kasu_carro')||'{}')||{};}catch(e){carro={};}
 function guardar(){try{localStorage.setItem('kasu_carro',JSON.stringify(carro));}catch(e){}}
@@ -341,6 +410,7 @@ function totales(envolver){var sub=lineas().reduce(function(a,l){return a+l.p.pr
 // Dos clases de ahorro, ambas reales:
 //  · antes: precio anterior de Kasu en una promoción (solo si el administrador lo pone en el panel)
 //  · ref: lo que cuesta el mismo producto en otra tienda en línea, consultado en la fecha refFecha; solo se muestra si Kasu es más barato
+var MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 function fechaCorta(f){var m=String(f||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?(+m[3])+'/'+m[2]+'/'+m[1]:'';}
 function ahorroJuntos(p,detalle){
   var suelto=0,txt='';
@@ -351,7 +421,11 @@ function ahorroJuntos(p,detalle){
 }
 function precioHTML(p,detalle){
   var ah=p.antes>p.precio?Math.round((1-p.precio/p.antes)*100):0;
-  var rf=!ah&&p.ref>p.precio?p.ref:0,ahr=rf?rf-p.precio:0;
+  var lz=!ah&&enLanzamiento()&&p.regular>p.precio?p.regular:0;
+  var rf=!ah&&!lz&&p.ref>p.precio?p.ref:0,ahr=rf?rf-p.precio:0;
+  if(lz)return '<div class="precio"><b>'+pesos(p.precio)+'</b><s>'+pesos(lz)+'</s><span class="ahorro lanz">-'+Math.round((1-p.precio/lz)*100)+'%</span></div>'
+    +'<p class="lanz-n">Precio de lanzamiento hasta el '+LANZ_FIN.getDate()+' de '+MESES[LANZ_FIN.getMonth()]+(detalle?'. Desde el día siguiente, '+pesos(lz)+'.':'')+'</p>'
+    +ahorroJuntos(p,detalle);
   return '<div class="precio"><b>'+pesos(p.precio)+'</b>'
     +(ah?'<s>'+pesos(p.antes)+'</s><span class="ahorro">Ahorras '+ah+'%</span>':'')
     +(rf?'<span class="tachado"><s>'+pesos(rf)+'</s><small>en otras tiendas</small></span><span class="ahorro">-'+Math.max(1,Math.round(ahr/rf*100))+'% · Ahorras '+pesos(ahr)+'</span>':'')+'</div>'
@@ -362,7 +436,7 @@ function pintar(){
   var cats=['Todos'].concat(visibles().map(function(p){return p.cat;}).filter(function(c,i,a){return a.indexOf(c)===i;}));
   $('cats').innerHTML=cats.map(function(c){return '<button type="button" aria-pressed="'+(c===cat)+'" data-cat="'+esc(c)+'">'+esc(c)+'</button>';}).join('');
   var cc=coleccion();
-  $('cols').innerHTML=COLS.map(function(c){if(c.oculta)return '';var n=visibles().filter(c.f).length;return n?'<button type="button" class="col" data-col="'+c.id+'" aria-pressed="'+(c.id===col)+'"><b>'+esc(c.t)+'</b><span>'+esc(c.s)+' · '+n+'</span></button>':'';}).join('');
+  $('cols').innerHTML=COLS.map(function(c){if(c.oculta)return '';var n=visibles().filter(c.f).length;return n?'<button type="button" class="col" data-col="'+c.id+'" aria-pressed="'+(c.id===col)+'">'+(FOTO_COL[c.id]?'<img class="col-foto" src="img/'+FOTO_COL[c.id]+'" alt="" loading="lazy" onerror="this.remove()">':'')+'<b>'+esc(c.t)+'</b><span>'+esc(c.s)+' · '+n+'</span></button>':'';}).join('');
   [].forEach.call(document.querySelectorAll('#amigo [data-col]'),function(b){b.setAttribute('aria-pressed',b.dataset.col===col);});
   $('titulo-lista').textContent=cc?cc.t:(cat==='Todos'?'Todo el catálogo':cat);
   var lista=visibles().filter(function(p){return (!cc||cc.f(p))&&(cat==='Todos'||p.cat===cat)&&(!busca||(p.nombre+' '+(p.titulo||'')+' '+p.desc).toLowerCase().indexOf(busca)>=0);});
@@ -474,10 +548,12 @@ if(esNavidad()){
   $('nieve').innerHTML=nv;
   var hoy=new Date(),nav=new Date(hoy.getFullYear(),11,24),dias=Math.ceil((nav-hoy)/864e5),corte=CONFIG.navidadCorte?new Date(CONFIG.navidadCorte+'T23:59:59'):null;
   var meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  if(enLanzamiento())$('cinta').insertAdjacentHTML('afterend','<span class="cinta" style="background:var(--tinta)">🚀 Precios de lanzamiento hasta el '+LANZ_FIN.getDate()+' de '+MESES[LANZ_FIN.getMonth()]+'</span> ');
   $('faltan').textContent=dias>0?'· Faltan '+dias+' días'+(corte&&corte>hoy?' · Pide antes del '+corte.getDate()+' de '+meses[corte.getMonth()]+' y te llega a tiempo':''):'· ¡Feliz Navidad!';
   var iN=COLS.findIndex(function(c){return c.id==='navidad';});if(iN>0)COLS.unshift(COLS.splice(iN,1)[0]);
 }
 pintar();
+armarCarrusel();
 </script>
 </body>
 </html>

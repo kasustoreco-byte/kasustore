@@ -146,11 +146,12 @@ td .sec{font-size:12px;color:var(--tinta-suave)}
 <script src="kasu-config.js"></script>
 <script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-copiar]");if(!b)return;var x=document.getElementById(b.dataset.copiar);x.select();(navigator.clipboard?navigator.clipboard.writeText(x.value):Promise.reject()).then(function(){b.textContent="Copiado";},function(){document.execCommand&&document.execCommand("copy");b.textContent="Copiado";});setTimeout(function(){b.textContent="Copiar";},2000);});</script>
 <script src="productos.js"></script>
+<script src="productos-expo.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 (function(){
 var $=function(id){return document.getElementById(id);};
-var CAT=(window.KASU_PRODUCTOS||[]).slice();
+var CAT=(window.KASU_PRODUCTOS||[]).filter(function(p){return (window.KASU_REEMPLAZA||[]).indexOf(p.id)<0;}).concat(window.KASU_PRODUCTOS_2||[]);
 var FB=window.KASU_FIREBASE, LS='kasu_precios_prueba';
 // datos: {regla:{margen,redondeo,secciones:{cat:margen}}, items:{id:{costo,margen,manual}}}
 var datos={regla:{margen:150,redondeo:'900',secciones:{}},items:{}};
