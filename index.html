@@ -188,6 +188,7 @@ dialog::backdrop{background:rgba(18,54,46,.55)}
 .cr .puntos-cr button{width:11px;height:11px;border-radius:50%;border:2px solid #fff;background:transparent;padding:0;cursor:pointer}
 .cr .puntos-cr button[aria-current=true]{background:#fff}
 @media (max-width:760px){.cr .slide:after{background:linear-gradient(0deg,rgba(18,54,46,.88) 0%,rgba(18,54,46,.5) 55%,rgba(18,54,46,.1) 100%)}.cr .txt{top:auto;bottom:40px;transform:none;max-width:88%}.cr .emo{top:12px;right:14px;transform:none;font-size:50px}}
+.combo-banda[hidden]{display:none}
 .combo-banda{display:grid;grid-template-columns:1fr 1.1fr;border-radius:28px;overflow:hidden;background:#FFE7D6;margin:0 0 34px}
 .combo-banda .foto{min-height:220px;background:linear-gradient(120deg,#FF7A2F,#FFB37A);display:grid;place-items:center;font-size:96px;position:relative}
 .combo-banda .foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -263,7 +264,7 @@ a.btn{text-decoration:none;text-align:center;display:block}
 <script src="kasu-config.js"></script>
 <script src="productos.js"></script>
 <script src="productos-expo.js"></script>
-<script src="productos-prov.js"></script>
+<script src="productos-prov.js?v=20261123d"></script>
 <script src="combos-kasu.js"></script>
 <script>
 /* ══ Lo que se configura por negocio (después lo administra el panel) ══ */
@@ -314,8 +315,14 @@ function aplicarPrecios(o){if(!o)return 0;var n=0;PRODUCTOS.forEach(function(p){
   if(FB&&FB.databaseURL){fetch(FB.databaseURL.replace(/\/$/,'')+'/precios.json').then(function(r){return r.ok?r.json():null;}).then(function(o){if(aplicarPrecios(o)){armarCombos();if(typeof pintar==='function')pintar();}}).catch(function(){});}
   else{try{aplicarPrecios(JSON.parse(localStorage.getItem('kasu_precios_prueba_publico')||'null'));}catch(e){}}
 })();
-// Primero los productos que ya tienen el texto de Kasu
-PRODUCTOS=PRODUCTOS.map(function(p,i){return{p:p,i:i};}).sort(function(a,b){return ((b.p.propio?1:0)-(a.p.propio?1:0))||(a.i-b.i);}).map(function(x){return x.p;});
+// Orden: primero los productos más relevantes de los proveedores (rel), intercalando secciones para que la vitrina se vea variada
+(function(){
+  if(!window.KASU_SOLO_PROVEEDORES){PRODUCTOS=PRODUCTOS.map(function(p,i){return{p:p,i:i};}).sort(function(a,b){return ((b.p.propio?1:0)-(a.p.propio?1:0))||(a.i-b.i);}).map(function(x){return x.p;});return;}
+  var orden=PRODUCTOS.slice().sort(function(a,b){return (b.rel||0)-(a.rel||0);}),porCat={},cats=[];
+  orden.forEach(function(p){if(!porCat[p.cat]){porCat[p.cat]=[];cats.push(p.cat);}porCat[p.cat].push(p);});
+  var r=[],quedan=true;while(quedan){quedan=false;cats.forEach(function(c){var x=porCat[c].shift();if(x){r.push(x);quedan=true;}});}
+  PRODUCTOS=r;var n=0;PRODUCTOS.forEach(function(p){if(!p.tarjeta&&n<24&&(p.rel||0)>=5){p.top=true;n++;}});
+})();
 // Combos Kasu: el precio sale de los productos por separado menos el descuento; el ahorro mostrado siempre es real
 function en900(v){return Math.ceil((v+100)/1000)*1000-100;}
 function armarCombos(){
@@ -334,9 +341,9 @@ function armarCombos(){
   PRODUCTOS=nuevos.concat(PRODUCTOS);
 }
 // Tarjetas de regalo: se entregan impresas en un sobre con un código; quien la recibe la usa en su pedido
-PRODUCTOS=(CONFIG.tarjetas||[]).map(function(v){return {id:'tr'+v/1000,nombre:'Tarjeta de regalo Kasu '+pesos(v),cat:'Tarjetas de regalo',precio:v,tarjeta:true,propio:true,navidad:true,ico:'regalo',
+PRODUCTOS=PRODUCTOS.concat((CONFIG.tarjetas||[]).map(function(v){return {id:'tr'+v/1000,nombre:'Tarjeta de regalo Kasu '+pesos(v),cat:'Tarjetas de regalo',precio:v,tarjeta:true,propio:true,navidad:false,ico:'regalo',
   desc:'Para que elija lo que más le guste de la tienda. Llega impresa en un sobre, con un código único.',
-  puntos:['Se usa en uno o varios pedidos hasta agotar el saldo','Si el pedido cuesta más, se paga solo la diferencia','Vigencia: '+CONFIG.tarjetaVigencia+' desde la compra','Quien la recibe escribe el código al hacer su pedido']};}).concat(PRODUCTOS);
+  puntos:['Se usa en uno o varios pedidos hasta agotar el saldo','Si el pedido cuesta más, se paga solo la diferencia','Vigencia: '+CONFIG.tarjetaVigencia+' desde la compra','Quien la recibe escribe el código al hacer su pedido']};}));
 armarCombos();
 function $(i){return document.getElementById(i);}
 function resumen(t){t=String(t||'');return t.length>110?t.slice(0,t.lastIndexOf(' ',105))+'…':t;}
@@ -371,6 +378,7 @@ var carro={},cat='Todos',busca='',tope=24,col='';
 // Colecciones: otra forma de entrar a la tienda, por lo que la persona necesita y no por categoría
 function txt(p){return ((p.titulo||'')+' '+p.nombre).toLowerCase();}
 var COLS=[
+ {id:'top',t:'Destacados',s:'Lo mejor de nuestros proveedores',f:function(p){return p.top;}},
  {id:'combos',t:'Combos Kasu',s:'Armados por nosotros, más baratos juntos',f:function(p){return p.combo;}},
  {id:'navidad',t:'Regalos de Navidad',s:'Ideas para el amigo secreto y la familia',f:function(p){return p.navidad;}},
  {id:'as30',oculta:1,t:'Amigo secreto: hasta $30.000',s:'',f:function(p){return p.precio<=30000&&!p.tarjeta;}},
@@ -448,6 +456,7 @@ function pintar(){
   var lista=visibles().filter(function(p){
     if(cc&&!cc.f(p))return false;
     if(cat!=='Todos'&&p.cat!==cat)return false;
+    if(p.tarjeta&&cat!=='Tarjetas de regalo'&&!pals.length)return false;
     if(!pals.length)return true;
     var t=sinTilde(p.nombre+' '+(p.titulo||'')+' '+(p.desc||'')+' '+(p.cat||'')+' '+(p.puntos||[]).join(' '));
     return pals.every(function(w){return t.indexOf(w)>=0;});
@@ -461,8 +470,9 @@ function pintar(){
       +(p.navidad?'<span class="regalo">🎁 Para regalar</span>':'')+'<h3>'+esc(p.nombre)+'</h3><p>'+esc(resumen(p.desc))+'</p>'+precioHTML(p)
       +'<div class="pie-ficha"><button class="btn" type="button" data-mas="'+p.id+'">Agregar</button><button class="btn claro" type="button" data-ver="'+p.id+'">Ver</button></div></article>';
   }).join('')+(total>lista.length?'<p class="vacio" style="grid-column:1/-1"><button class="btn claro" type="button" data-vermas>Ver más productos ('+(total-lista.length)+' más)</button></p>':''):'<p class="vacio">No encontramos productos con esa búsqueda. Prueba con otra palabra o elige otra categoría.</p>';
-  var e=document.body.classList.contains('navidad')?(visibles().filter(function(p){return p.combo;})[0]||visibles()[0]):visibles()[0];
+  var tops=visibles().filter(function(p){return p.top;}),e=tops.length?tops[Math.floor(Date.now()/864e5)%tops.length]:visibles().filter(function(p){return !p.tarjeta;})[0]||visibles()[0];
   $('estrella').innerHTML='<small>'+(document.body.classList.contains('navidad')?'Idea de regalo':'Te lo recomendamos')+'</small><div class="dibujo">'+foto(e)+'</div><h2>'+esc(e.nombre)+'</h2><p>'+esc(resumen(e.desc))+'</p>'+precioHTML(e)+'<button class="btn todo" type="button" data-comprar="'+e.id+'">Comprar ahora</button>';
+  if($('combo-banda'))$('combo-banda').hidden=!visibles().some(function(p){return p.combo;});
   $('cuenta').textContent=lineas().reduce(function(a,l){return a+l.q;},0);
   $('f-gratis').textContent=pesos(CONFIG.envioGratisDesde);
   if(CONFIG.whatsapp){$('wa').hidden=false;$('wa').href='https://wa.me/'+CONFIG.whatsapp+'?text='+encodeURIComponent('Hola Kasu, quiero hacer una pregunta');}
