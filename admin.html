@@ -88,6 +88,7 @@ td .sec{font-size:12px;color:var(--tinta-suave)}
     <div class="tar"><small>Más baratos que otras tiendas</small><b id="t-bajo">0</b></div>
     <div class="tar"><small>Ocultos en la tienda</small><b id="t-oc">0</b></div>
   </div>
+  <p class="ayuda" id="t-apag"></p>
 
   <section class="bloque">
     <h2>Regla de precio</h2>
@@ -158,6 +159,7 @@ td .sec{font-size:12px;color:var(--tinta-suave)}
 (function(){
 var $=function(id){return document.getElementById(id);};
 var CAT=(window.KASU_PRODUCTOS||[]).filter(function(p){return (window.KASU_REEMPLAZA||[]).indexOf(p.id)<0;}).concat(window.KASU_PRODUCTOS_2||[]).concat(window.KASU_PRODUCTOS_3||[]);
+var APAGADOS=0;if(window.KASU_SOLO_PROVEEDORES){var _on=window.KASU_PRENDIDOS||[],_n=CAT.length;CAT=CAT.filter(function(p){return p.origen==='prov'||_on.indexOf(p.id)>=0;});APAGADOS=_n-CAT.length;}
 var FB=window.KASU_FIREBASE, LS='kasu_precios_prueba';
 // datos: {regla:{margen,redondeo,secciones:{cat:margen}}, items:{id:{costo,margen,manual}}}
 var datos={regla:{margen:150,margenProv:110,redondeo:'900',secciones:{}},items:{}};
@@ -185,7 +187,7 @@ function guardarItem(id){var it=datos.items[id]||null;var c={};c['costos/items/'
 function secciones(){return CAT.map(function(p){return p.cat;}).filter(function(c,i,a){return a.indexOf(c)===i;}).sort();}
 function resumen(){
   var con=0,bajo=0,oc=0;CAT.forEach(function(p){var it=datos.items[p.id]||{};if(it.oculto)oc++;if(it.costo>0||it.manual>0)con++;if(p.ref>0&&precioDe(p)<p.ref)bajo++;});
-  $('t-total').textContent=CAT.length.toLocaleString('es-CO');$('t-costo').textContent=con.toLocaleString('es-CO');$('t-sin').textContent=(CAT.length-con).toLocaleString('es-CO');$('t-bajo').textContent=bajo.toLocaleString('es-CO');$('t-oc').textContent=oc.toLocaleString('es-CO');
+  $('t-total').textContent=CAT.length.toLocaleString('es-CO');$('t-costo').textContent=con.toLocaleString('es-CO');$('t-sin').textContent=(CAT.length-con).toLocaleString('es-CO');$('t-bajo').textContent=bajo.toLocaleString('es-CO');$('t-oc').textContent=oc.toLocaleString('es-CO');if(APAGADOS&&$('t-apag'))$('t-apag').textContent=APAGADOS.toLocaleString('es-CO')+' productos viejos apagados porque ningún proveedor los tiene. Se prenden cuando aparezcan en un catálogo de proveedor.';
 }
 function lista(){
   var q=$('f-busca').value.trim().toLowerCase(),s=$('f-sec').value,v=$('f-ver').value;
