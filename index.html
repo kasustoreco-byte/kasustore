@@ -295,7 +295,7 @@ var PRODUCTOS=(window.KASU_PRODUCTOS&&window.KASU_PRODUCTOS.length)?window.KASU_
 if(window.KASU_PRODUCTOS_2){var _rz=window.KASU_REEMPLAZA||[];PRODUCTOS=PRODUCTOS.filter(function(p){return _rz.indexOf(p.id)<0;}).concat(window.KASU_PRODUCTOS_2);}
 if(window.KASU_PRODUCTOS_3)PRODUCTOS=PRODUCTOS.concat(window.KASU_PRODUCTOS_3);
 // Solo se venden los productos que tienen los proveedores (y los de la lista KASU_PRENDIDOS)
-if(window.KASU_SOLO_PROVEEDORES){var _on=window.KASU_PRENDIDOS||[];PRODUCTOS=PRODUCTOS.filter(function(p){return p.origen==='prov'||_on.indexOf(p.id)>=0;});}
+if(window.KASU_SOLO_PROVEEDORES){var _on=window.KASU_PRENDIDOS||[];PRODUCTOS=PRODUCTOS.filter(function(p){if(_on.indexOf(p.id)>=0){p.origen='prov';p.regular=0;p.antes=0;}return p.origen==='prov';});}
 // Precio de arranque: un poco más barato que el precio REAL de la otra tienda (ref), redondeado hacia abajo a centenas.
 // Cuando el panel tenga el costo y el precio de un producto, manda el del panel.
 // Lanzamiento: mientras dure se vende con descuento sobre el precio regular de Kasu (el tachado).

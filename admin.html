@@ -159,7 +159,7 @@ td .sec{font-size:12px;color:var(--tinta-suave)}
 (function(){
 var $=function(id){return document.getElementById(id);};
 var CAT=(window.KASU_PRODUCTOS||[]).filter(function(p){return (window.KASU_REEMPLAZA||[]).indexOf(p.id)<0;}).concat(window.KASU_PRODUCTOS_2||[]).concat(window.KASU_PRODUCTOS_3||[]);
-var APAGADOS=0;if(window.KASU_SOLO_PROVEEDORES){var _on=window.KASU_PRENDIDOS||[],_n=CAT.length;CAT=CAT.filter(function(p){return p.origen==='prov'||_on.indexOf(p.id)>=0;});APAGADOS=_n-CAT.length;}
+var APAGADOS=0;if(window.KASU_SOLO_PROVEEDORES){var _on=window.KASU_PRENDIDOS||[],_n=CAT.length;CAT=CAT.filter(function(p){if(_on.indexOf(p.id)>=0){p.origen='prov';p.regular=0;p.antes=0;}return p.origen==='prov';});APAGADOS=_n-CAT.length;}
 var FB=window.KASU_FIREBASE, LS='kasu_precios_prueba';
 // datos: {regla:{margen,redondeo,secciones:{cat:margen}}, items:{id:{costo,margen,manual}}}
 var datos={regla:{margen:150,margenProv:110,redondeo:'900',secciones:{}},items:{}};
@@ -313,7 +313,7 @@ if(!FB){
       if(!u){$('b-ingreso').hidden=false;$('trabajo').hidden=true;return;}
       $('b-ingreso').hidden=true;$('quien').innerHTML=esc(u.email)+' · <a href="#" id="salir">Salir</a>';
       db=firebase.database();
-      db.ref('costos').once('value').then(function(s){var v=s.val()||{};datos.regla=Object.assign({margen:150,margenProv:110,redondeo:'900',secciones:{}},v.regla||{});datos.items=v.items||{};empezar();},function(){msg('i-msg','Esta cuenta no tiene permiso para ver los costos.',false);});
+      db.ref('costos').once('value').then(function(s){var v=s.val()||{};datos.regla=Object.assign({margen:150,margenProv:110,redondeo:'900',secciones:{}},v.regla||{});datos.items=v.items||{};empezar();},function(){$('b-ingreso').hidden=false;$('i-msg').closest('section').querySelectorAll('.fila,label,input,button').forEach(function(x){x.hidden=true;});msg('i-msg','Entró como '+u.email+', pero la base de datos no le da permiso a ese correo para ver los costos. En Firebase → Realtime Database → Reglas, ponga este mismo correo donde dice CORREO-DEL-ADMINISTRADOR (en los dos lugares), oprima Publicar y recargue esta página.',false);});
     });
     $('i-entrar').addEventListener('click',function(){firebase.auth().signInWithEmailAndPassword($('i-correo').value.trim(),$('i-clave').value).catch(function(){msg('i-msg','Correo o contraseña incorrectos.',false);});});
     document.addEventListener('click',function(e){if(e.target.id==='salir'){e.preventDefault();firebase.auth().signOut();}});
