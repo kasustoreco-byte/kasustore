@@ -98,6 +98,11 @@ td .sec{font-size:12px;color:var(--tinta-suave)}
       <button class="btn" id="r-guardar" type="button">Guardar regla</button>
     </div>
     <div class="fila" style="margin-top:12px">
+      <label class="campo">Margen para productos de proveedores (%)<input id="r-margen-prov" type="number" min="0" step="5" style="width:120px"></label>
+      <button class="btn claro" id="r-guardar-prov" type="button">Guardar margen de proveedores</button>
+    </div>
+    <p class="ayuda" style="margin-top:6px">Se aplica a los productos traídos de los catálogos de proveedores (filtro «De proveedores»). Ejemplo: costo $40.000 con 110 % → $84.000 antes de redondear. Un margen puesto en el producto manda sobre este.</p>
+    <div class="fila" style="margin-top:12px">
       <label class="campo">Margen por sección<select id="s-sec"></select></label>
       <label class="campo">Margen (%) · vacío = el general<input id="s-margen" type="number" min="0" step="5" style="width:120px"></label>
       <button class="btn claro" id="s-guardar" type="button">Aplicar a la sección</button>
@@ -124,7 +129,7 @@ td .sec{font-size:12px;color:var(--tinta-suave)}
     <div class="fila" style="margin-bottom:12px">
       <label class="campo" style="flex:1;min-width:200px">Buscar<input id="f-busca" type="search" placeholder="Nombre o código"></label>
       <label class="campo">Sección<select id="f-sec"></select></label>
-      <label class="campo">Mostrar<select id="f-ver"><option value="">Todos</option><option value="sin">Sin costo</option><option value="con">Con costo</option><option value="caro">Más caros que otra tienda</option><option value="oculto">Ocultos</option></select></label>
+      <label class="campo">Mostrar<select id="f-ver"><option value="">Todos</option><option value="sin">Sin costo</option><option value="con">Con costo</option><option value="caro">Más caros que otra tienda</option><option value="oculto">Ocultos</option><option value="prov">De proveedores</option></select></label>
     </div>
     <div class="tabla-caja"><table>
       <thead><tr><th>Producto</th><th class="num">Costo</th><th class="num">Margen %</th><th class="num">Precio manual</th><th class="num">Precio de venta</th><th class="num">Ganancia</th><th class="num">Otra tienda</th><th>Estado</th><th>En tienda</th></tr></thead>
@@ -147,21 +152,22 @@ td .sec{font-size:12px;color:var(--tinta-suave)}
 <script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-copiar]");if(!b)return;var x=document.getElementById(b.dataset.copiar);x.select();(navigator.clipboard?navigator.clipboard.writeText(x.value):Promise.reject()).then(function(){b.textContent="Copiado";},function(){document.execCommand&&document.execCommand("copy");b.textContent="Copiado";});setTimeout(function(){b.textContent="Copiar";},2000);});</script>
 <script src="productos.js"></script>
 <script src="productos-expo.js"></script>
+<script src="productos-prov.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 (function(){
 var $=function(id){return document.getElementById(id);};
-var CAT=(window.KASU_PRODUCTOS||[]).filter(function(p){return (window.KASU_REEMPLAZA||[]).indexOf(p.id)<0;}).concat(window.KASU_PRODUCTOS_2||[]);
+var CAT=(window.KASU_PRODUCTOS||[]).filter(function(p){return (window.KASU_REEMPLAZA||[]).indexOf(p.id)<0;}).concat(window.KASU_PRODUCTOS_2||[]).concat(window.KASU_PRODUCTOS_3||[]);
 var FB=window.KASU_FIREBASE, LS='kasu_precios_prueba';
 // datos: {regla:{margen,redondeo,secciones:{cat:margen}}, items:{id:{costo,margen,manual}}}
-var datos={regla:{margen:150,redondeo:'900',secciones:{}},items:{}};
+var datos={regla:{margen:150,margenProv:110,redondeo:'900',secciones:{}},items:{}};
 var db=null, pagina=0, POR=50;
 
 function pesos(n){return '$'+Math.round(n||0).toLocaleString('es-CO');}
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function num(v){if(v==null)return null;var s=String(v).replace(/[$\s]/g,'');if(s==='')return null;if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(',','.');var n=Number(s);return isFinite(n)?n:NaN;}
 function redondear(v,m){if(!(v>0))return 0;if(m==='1000')return Math.ceil(v/1000)*1000;if(m==='100')return Math.ceil(v/100)*100;return Math.ceil((v+100)/1000)*1000-100;}
-function margenDe(p){var it=datos.items[p.id]||{};if(it.margen!=null&&it.margen!=='')return Number(it.margen);var s=datos.regla.secciones||{};if(s[p.cat]!=null)return Number(s[p.cat]);return Number(datos.regla.margen)||0;}
+function margenDe(p){var it=datos.items[p.id]||{};if(it.margen!=null&&it.margen!=='')return Number(it.margen);if(p.origen==='prov'&&datos.regla.margenProv!=null&&datos.regla.margenProv!=='')return Number(datos.regla.margenProv);var s=datos.regla.secciones||{};if(s[p.cat]!=null)return Number(s[p.cat]);return Number(datos.regla.margen)||0;}
 function precioDe(p){var it=datos.items[p.id]||{};if(it.manual>0)return Math.round(it.manual);if(it.costo>0)return redondear(it.costo*(1+margenDe(p)/100),datos.regla.redondeo);return p.precio;}
 // Lo que lee la tienda: solo el precio final de cada producto con costo o precio manual
 function publico(){var o={};CAT.forEach(function(p){var it=datos.items[p.id];if(!it)return;var x={};if(it.costo>0||it.manual>0)x.precio=precioDe(p);if(it.oculto)x.oculto=true;if(x.precio||x.oculto)o[p.id]=x;});return o;}
@@ -186,7 +192,7 @@ function lista(){
   return CAT.filter(function(p){
     var it=datos.items[p.id]||{},tiene=it.costo>0||it.manual>0;
     if(s&&p.cat!==s)return false;
-    if(v==='sin'&&tiene)return false;if(v==='con'&&!tiene)return false;if(v==='caro'&&!(p.ref>0&&precioDe(p)>=p.ref))return false;if(v==='oculto'&&!it.oculto)return false;
+    if(v==='sin'&&tiene)return false;if(v==='con'&&!tiene)return false;if(v==='caro'&&!(p.ref>0&&precioDe(p)>=p.ref))return false;if(v==='oculto'&&!it.oculto)return false;if(v==='prov'&&p.origen!=='prov')return false;
     return !q||(p.nombre+' '+(p.titulo||'')+' '+p.id+' '+(p.sku||'')).toLowerCase().indexOf(q)>=0;
   });
 }
@@ -228,6 +234,11 @@ $('r-guardar').addEventListener('click',function(){
   var m=num($('r-margen').value);if(m==null||isNaN(m)||m<0){msg('r-msg','Escriba el margen en números, por ejemplo 150.',false);return;}
   datos.regla.margen=m;datos.regla.redondeo=$('r-redondeo').value;
   guardar({'costos/regla/margen':m,'costos/regla/redondeo':datos.regla.redondeo}).then(function(){msg('r-msg','Regla guardada. Los precios de los productos con costo se recalcularon.',true);pintar();});
+});
+$('r-guardar-prov').addEventListener('click',function(){
+  var m=num($('r-margen-prov').value);if(m==null||isNaN(m)||m<0){msg('r-msg','Escriba el margen de proveedores en números, por ejemplo 110.',false);return;}
+  datos.regla.margenProv=m;
+  guardar({'costos/regla/margenProv':m}).then(function(){msg('r-msg','Margen de proveedores guardado: '+m+' %. Los precios de esos productos se recalcularon.',true);pintar();});
 });
 $('s-guardar').addEventListener('click',function(){
   var s=$('s-sec').value,m=num($('s-margen').value);if(isNaN(m)||(m!=null&&m<0)){msg('r-msg','Escriba el margen en números.',false);return;}
@@ -284,7 +295,7 @@ $('x-archivo').addEventListener('change',function(){
 /* ── Arranque ── */
 function llenarSelects(){var ss=secciones();$('f-sec').innerHTML='<option value="">Todas</option>'+ss.map(function(s){return '<option>'+esc(s)+'</option>';}).join('');$('s-sec').innerHTML=ss.map(function(s){return '<option>'+esc(s)+'</option>';}).join('');}
 function empezar(){
-  $('r-margen').value=datos.regla.margen;$('r-redondeo').value=datos.regla.redondeo||'900';
+  $('r-margen').value=datos.regla.margen;$('r-margen-prov').value=datos.regla.margenProv==null?110:datos.regla.margenProv;$('r-redondeo').value=datos.regla.redondeo||'900';
   llenarSelects();var v=(datos.regla.secciones||{})[$('s-sec').value];$('s-margen').value=v==null?'':v;
   $('trabajo').hidden=false;pintar();
 }
@@ -300,7 +311,7 @@ if(!FB){
       if(!u){$('b-ingreso').hidden=false;$('trabajo').hidden=true;return;}
       $('b-ingreso').hidden=true;$('quien').innerHTML=esc(u.email)+' · <a href="#" id="salir">Salir</a>';
       db=firebase.database();
-      db.ref('costos').once('value').then(function(s){var v=s.val()||{};datos.regla=Object.assign({margen:150,redondeo:'900',secciones:{}},v.regla||{});datos.items=v.items||{};empezar();},function(){msg('i-msg','Esta cuenta no tiene permiso para ver los costos.',false);});
+      db.ref('costos').once('value').then(function(s){var v=s.val()||{};datos.regla=Object.assign({margen:150,margenProv:110,redondeo:'900',secciones:{}},v.regla||{});datos.items=v.items||{};empezar();},function(){msg('i-msg','Esta cuenta no tiene permiso para ver los costos.',false);});
     });
     $('i-entrar').addEventListener('click',function(){firebase.auth().signInWithEmailAndPassword($('i-correo').value.trim(),$('i-clave').value).catch(function(){msg('i-msg','Correo o contraseña incorrectos.',false);});});
     document.addEventListener('click',function(e){if(e.target.id==='salir'){e.preventDefault();firebase.auth().signOut();}});

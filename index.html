@@ -35,6 +35,7 @@ p{margin:0}
 .franja{background:var(--tinta);color:var(--menta-suave);font-size:14px}
 .franja .ancho{display:flex;gap:8px 24px;flex-wrap:wrap;justify-content:center;padding-top:8px;padding-bottom:8px}
 header{background:#74D8B6;border-bottom:1px solid var(--linea);position:sticky;top:0;z-index:5}
+#titulo-lista{scroll-margin-top:calc(var(--alto-cab,140px) + 12px)}
 header .ancho{display:flex;align-items:center;gap:16px;padding-top:4px;padding-bottom:4px;flex-wrap:wrap}
 .marca{display:flex;align-items:center}.marca img{display:block;height:64px;width:auto}
 .marca b{font-family:var(--display);font-weight:800;font-size:34px;line-height:1;letter-spacing:-1px}
@@ -262,6 +263,7 @@ a.btn{text-decoration:none;text-align:center;display:block}
 <script src="kasu-config.js"></script>
 <script src="productos.js"></script>
 <script src="productos-expo.js"></script>
+<script src="productos-prov.js"></script>
 <script src="combos-kasu.js"></script>
 <script>
 /* ══ Lo que se configura por negocio (después lo administra el panel) ══ */
@@ -291,6 +293,7 @@ var MUESTRA=[
 var PRODUCTOS=(window.KASU_PRODUCTOS&&window.KASU_PRODUCTOS.length)?window.KASU_PRODUCTOS:MUESTRA;
 // Segunda tienda: se suma al catálogo (y quita de la primera los que allí salen más baratos)
 if(window.KASU_PRODUCTOS_2){var _rz=window.KASU_REEMPLAZA||[];PRODUCTOS=PRODUCTOS.filter(function(p){return _rz.indexOf(p.id)<0;}).concat(window.KASU_PRODUCTOS_2);}
+if(window.KASU_PRODUCTOS_3)PRODUCTOS=PRODUCTOS.concat(window.KASU_PRODUCTOS_3);
 // Precio de arranque: un poco más barato que el precio REAL de la otra tienda (ref), redondeado hacia abajo a centenas.
 // Cuando el panel tenga el costo y el precio de un producto, manda el del panel.
 // Lanzamiento: mientras dure se vende con descuento sobre el precio regular de Kasu (el tachado).
@@ -438,9 +441,19 @@ function pintar(){
   var cc=coleccion();
   $('cols').innerHTML=COLS.map(function(c){if(c.oculta)return '';var n=visibles().filter(c.f).length;return n?'<button type="button" class="col" data-col="'+c.id+'" aria-pressed="'+(c.id===col)+'">'+(FOTO_COL[c.id]?'<img class="col-foto" src="img/'+FOTO_COL[c.id]+'" alt="" loading="lazy" onerror="this.remove()">':'')+'<b>'+esc(c.t)+'</b><span>'+esc(c.s)+' · '+n+'</span></button>':'';}).join('');
   [].forEach.call(document.querySelectorAll('#amigo [data-col]'),function(b){b.setAttribute('aria-pressed',b.dataset.col===col);});
-  $('titulo-lista').textContent=cc?cc.t:(cat==='Todos'?'Todo el catálogo':cat);
-  var lista=visibles().filter(function(p){return (!cc||cc.f(p))&&(cat==='Todos'||p.cat===cat)&&(!busca||(p.nombre+' '+(p.titulo||'')+' '+p.desc).toLowerCase().indexOf(busca)>=0);});
-  var total=lista.length;lista=lista.slice(0,tope);
+  // 🔍 Búsqueda sin importar tildes ni mayúsculas; cada palabra debe aparecer (en nombre, descripción o categoría)
+  var pals=busca?busca.split(/\s+/).filter(Boolean):[];
+  var lista=visibles().filter(function(p){
+    if(cc&&!cc.f(p))return false;
+    if(cat!=='Todos'&&p.cat!==cat)return false;
+    if(!pals.length)return true;
+    var t=sinTilde(p.nombre+' '+(p.titulo||'')+' '+(p.desc||'')+' '+(p.cat||'')+' '+(p.puntos||[]).join(' '));
+    return pals.every(function(w){return t.indexOf(w)>=0;});
+  });
+  var total=lista.length;
+  $('titulo-lista').textContent=busca?('Resultados para «'+$('q').value.trim()+'» ('+total+')'):(cc?cc.t:(cat==='Todos'?'Todo el catálogo':cat));
+  lista=lista.slice(0,tope);
+  $('cats').style.display=busca?'none':'';  // mientras busca, los botones de categoría se esconden para que los resultados queden a la vista
   $('grilla').innerHTML=lista.length?lista.map(function(p){
     return '<article class="ficha"><button class="ver" type="button" data-ver="'+p.id+'" aria-label="Ver '+esc(p.nombre)+'"><div class="dibujo">'+foto(p)+'</div></button>'
       +(p.navidad?'<span class="regalo">🎁 Para regalar</span>':'')+'<h3>'+esc(p.nombre)+'</h3><p>'+esc(resumen(p.desc))+'</p>'+precioHTML(p)
@@ -535,7 +548,12 @@ document.addEventListener('click',function(ev){
 });
 document.addEventListener('change',function(ev){if(!ev.target.closest||!ev.target.closest('#f-pago'))return;var o=$('c-otro').checked,e=$('c-envolver').checked;$('otro').hidden=!o;$('l-nota').hidden=!(o||e);$('l-dir').textContent=o?'Dirección y barrio de quien recibe':'Dirección y barrio';$('l-emp').hidden=!(e&&CONFIG.envoltura);$('pago-total').textContent=pesos(totales(e).total);});
 document.addEventListener('submit',function(ev){ev.preventDefault();if(ev.target.id==='f-pago')confirmar();});
-$('q').addEventListener('input',function(){busca=this.value.trim().toLowerCase();tope=24;pintar();});
+function sinTilde(x){return String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+// Al buscar se mira todo el catálogo y la página baja sola a los resultados (en el celular quedaban muy abajo y parecía que no hacía nada)
+var _tBusca=null;
+function irResultados(){var hd=document.querySelector('header');if(hd)document.documentElement.style.setProperty('--alto-cab',hd.offsetHeight+'px');var t=$('titulo-lista');if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}
+$('q').addEventListener('input',function(){busca=sinTilde(this.value.trim());if(busca){cat='Todos';col='';}tope=24;pintar();clearTimeout(_tBusca);if(busca)_tBusca=setTimeout(irResultados,900);});
+$('q').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();clearTimeout(_tBusca);this.blur();irResultados();}});
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('[data-vermas]')){tope+=24;pintar();return;}var c=e.target.closest('[data-col]');if(c){col=col===c.dataset.col?'':c.dataset.col;cat='Todos';tope=24;pintar();var tl=$('titulo-lista');if(col&&tl.scrollIntoView)tl.scrollIntoView({behavior:'smooth',block:'start'});}});
 // ── Temporada de Navidad ──
 function esNavidad(){var c=CONFIG.navidad;if(c===true||c===false)return c;var d=new Date(),m=d.getMonth()+1,x=d.getDate();return (m===11&&x>=15)||m===12||(m===1&&x<=6);}
